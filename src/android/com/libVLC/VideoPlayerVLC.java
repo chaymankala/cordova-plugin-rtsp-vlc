@@ -27,6 +27,12 @@ public class VideoPlayerVLC extends CordovaPlugin {
     private final String TAG = "VideoPlayerVLC";
     public final static String BROADCAST_METHODS = "com.libVLC";
 
+    private static final int MESSAGE_RTSP_OK = 1;
+    private static final int MESSAGE_RTSP_ERROR = -1;
+    private Handler handler;
+
+
+
     private CallbackContext callbackContext;
     BroadcastReceiver br = new BroadcastReceiver() {
 
@@ -79,6 +85,7 @@ public class VideoPlayerVLC extends CordovaPlugin {
         }
 
         String url;
+        int port;
         JSONObject object;
 
         if (action.equals("play")) {
@@ -92,6 +99,12 @@ public class VideoPlayerVLC extends CordovaPlugin {
         }
         else if (action.equals("stop")) {
             _filters("stop");
+            return true;
+        }
+        else if (action.equals("ping")) {
+            url = args.getString(0);
+            port = args.getInt(1);
+            _ping(url, port);
             return true;
         }
 
@@ -128,6 +141,66 @@ public class VideoPlayerVLC extends CordovaPlugin {
         intent.putExtra("autoPlay", autoPlay);
         intent.putExtra("hideControls", hideControls);
         cordova.startActivityForResult(this, intent, 1000);
+    }
+
+    private void _ping(String host, int port) {
+        handler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what){
+                    case MESSAGE_RTSP_OK:
+                        this.callbackContext.success();
+                        break;
+                    case MESSAGE_RTSP_ERROR:
+                        this.callbackContext.error();
+                        break;
+                }
+            }
+        };
+
+        new Thread() {
+            public void run() {
+                try {
+                    Socket client = new Socket(host, port);
+                    OutputStream os = client.getOutputStream();
+                    os.write("OPTIONS * RTSP/1.0\n".getBytes());
+                    os.write("CSeq: 1\n\n".getBytes());
+                    os.flush();
+    
+                    //NOTE: it's very important to end any rtsp request with \n\n (two new lines). The server will acknowledge that the request ends there and it's time to send the response back.
+    
+                    BufferedReader br =
+                            new BufferedReader(
+                                    new InputStreamReader(
+                                            new BufferedInputStream(client.getInputStream())));
+    
+                    StringBuilder sb = new StringBuilder();
+                    String responseLine = null;
+    
+                    while (null != (responseLine = br.readLine()))
+                        sb.append(responseLine);
+                    String rtspResponse = sb.toString();
+                    if(rtspResponse.startsWith("RTSP/1.0 200 OK")){
+                        // RTSP SERVER IS UP!!
+                         handler.obtainMessage(MESSAGE_RTSP_OK).sendToTarget();
+                    } else {
+                        // SOMETHING'S WRONG
+    
+                        handler.obtainMessage(MESSAGE_RTSP_ERROR).sendToTarget();
+                    }
+                    Log.d("RTSP reply" , rtspResponse);
+                    client.close();
+                } catch (IOException e) {
+                    // NETWORK ERROR such as Timeout 
+                    e.printStackTrace();
+    
+                    handler.obtainMessage(MESSAGE_RTSP_ERROR).sendToTarget();
+                }
+    
+            }
+        }.start();
+
+        
     }
 
     private void _playNext(String uri, boolean autoPlay, boolean hideControls) {
