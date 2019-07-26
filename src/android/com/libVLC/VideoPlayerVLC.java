@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
@@ -15,6 +17,13 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.Socket;
 
 /**
  * Author: Archie, Disono (webmonsph@gmail.com)
@@ -102,9 +111,7 @@ public class VideoPlayerVLC extends CordovaPlugin {
             return true;
         }
         else if (action.equals("ping")) {
-            url = args.getString(0);
-            port = args.getInt(1);
-            _ping(url, port);
+            _ping(url, port, this.callbackContext);
             return true;
         }
 
@@ -143,16 +150,16 @@ public class VideoPlayerVLC extends CordovaPlugin {
         cordova.startActivityForResult(this, intent, 1000);
     }
 
-    private void _ping(String host, int port) {
+    private void _ping(String host, int port, CallbackContext callbackContext) {
         handler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what){
                     case MESSAGE_RTSP_OK:
-                        this.callbackContext.success();
+                        callbackContext.success();
                         break;
                     case MESSAGE_RTSP_ERROR:
-                        this.callbackContext.error();
+                        callbackContext.error("Ping Failed");
                         break;
                 }
             }
