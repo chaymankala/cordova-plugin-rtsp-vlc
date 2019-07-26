@@ -21,7 +21,10 @@
 var exec = require("cordova/exec");
 
 module.exports = {
-  play: function(uri, success, failure) {
+  play: function (uri, success, failure) {
     exec(success, failure, "VideoPlayerVLC", "play", [uri]);
+  },
+  ping: function (uri, success, failure) {
+    exec(success, failure, "VideoPlayerVLC", "ping", [uri]);
   }
 };
