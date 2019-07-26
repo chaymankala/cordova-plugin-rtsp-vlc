@@ -24,7 +24,7 @@ module.exports = {
   play: function (uri, success, failure) {
     exec(success, failure, "VideoPlayerVLC", "play", [uri]);
   },
-  ping: function (uri, success, failure) {
-    exec(success, failure, "VideoPlayerVLC", "ping", [uri]);
+  ping: function (host, port, success, failure) {
+    exec(success, failure, "VideoPlayerVLC", "ping", [host, port]);
   }
 };
