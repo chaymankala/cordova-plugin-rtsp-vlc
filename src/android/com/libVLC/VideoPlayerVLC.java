@@ -160,10 +160,10 @@ public class VideoPlayerVLC extends CordovaPlugin {
                     Socket client = new Socket(host, port);
                     if(client.isConnected()){
                         callbackContext.success();
+                        client.close();
                     }else{
                         callbackContext.error("Cannot connect");
                     }
-                    client.close();
                 } catch (IOException e) {
                     // NETWORK ERROR such as Timeout 
                     e.printStackTrace();
