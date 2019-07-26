@@ -83,7 +83,7 @@ public class VideoPlayerVLC extends CordovaPlugin {
 
         if (action.equals("play")) {
             url = args.getString(0);
-            _play(url, true, true);
+            _play(url, true, false);
             return true;
         }
         else if (action.equals("pause")) {
