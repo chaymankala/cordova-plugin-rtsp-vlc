@@ -153,51 +153,16 @@ public class VideoPlayerVLC extends CordovaPlugin {
     }
 
     private void _ping(String host, int port, CallbackContext callbackContext) {
-        handler = new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                switch (msg.what){
-                    case MESSAGE_RTSP_OK:
-                        callbackContext.success();
-                        break;
-                    case MESSAGE_RTSP_ERROR:
-                        callbackContext.error("Ping Failed");
-                        break;
-                }
-            }
-        };
-
-        new Thread() {
+        cordova.getThreadPool().execute(
+        new Runnable() {
             public void run() {
                 try {
                     Socket client = new Socket(host, port);
-                    OutputStream os = client.getOutputStream();
-                    os.write("OPTIONS * RTSP/1.0\n".getBytes());
-                    os.write("CSeq: 1\n\n".getBytes());
-                    os.flush();
-    
-                    //NOTE: it's very important to end any rtsp request with \n\n (two new lines). The server will acknowledge that the request ends there and it's time to send the response back.
-    
-                    BufferedReader br =
-                            new BufferedReader(
-                                    new InputStreamReader(
-                                            new BufferedInputStream(client.getInputStream())));
-    
-                    StringBuilder sb = new StringBuilder();
-                    String responseLine = null;
-    
-                    while (null != (responseLine = br.readLine()))
-                        sb.append(responseLine);
-                    String rtspResponse = sb.toString();
-                    if(rtspResponse.startsWith("RTSP/1.0 200 OK")){
-                        // RTSP SERVER IS UP!!
-                         handler.obtainMessage(MESSAGE_RTSP_OK).sendToTarget();
-                    } else {
-                        // SOMETHING'S WRONG
-    
-                        handler.obtainMessage(MESSAGE_RTSP_ERROR).sendToTarget();
+                    if(client.isConnected()){
+                        callbackContext.success();
+                    }else{
+                        callbackContext.error("Cannot connect");
                     }
-                    Log.d("RTSP reply" , rtspResponse);
                     client.close();
                 } catch (IOException e) {
                     // NETWORK ERROR such as Timeout 
@@ -207,7 +172,7 @@ public class VideoPlayerVLC extends CordovaPlugin {
                 }
     
             }
-        }.start();
+        });
 
         
     }
