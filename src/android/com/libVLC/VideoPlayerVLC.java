@@ -111,6 +111,8 @@ public class VideoPlayerVLC extends CordovaPlugin {
             return true;
         }
         else if (action.equals("ping")) {
+            url = args.getString(0);
+            port = args.getInt(1);
             _ping(url, port, this.callbackContext);
             return true;
         }
