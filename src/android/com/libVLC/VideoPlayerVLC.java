@@ -113,7 +113,7 @@ public class VideoPlayerVLC extends CordovaPlugin {
         else if (action.equals("ping")) {
             url = args.getString(0);
             port = args.getInt(1);
-            _ping(url, port, this.callbackContext);
+            _ping(url, port, callbackContext);
             return true;
         }
 
@@ -152,7 +152,7 @@ public class VideoPlayerVLC extends CordovaPlugin {
         cordova.startActivityForResult(this, intent, 1000);
     }
 
-    private void _ping(String host, int port, CallbackContext callbackContext) {
+    private void _ping(String host, int port, final CallbackContext callbackContext) {
         cordova.getThreadPool().execute(
         new Runnable() {
             public void run() {
@@ -165,10 +165,8 @@ public class VideoPlayerVLC extends CordovaPlugin {
                         callbackContext.error("Cannot connect");
                     }
                 } catch (IOException e) {
-                    // NETWORK ERROR such as Timeout 
                     e.printStackTrace();
-    
-                    handler.obtainMessage(MESSAGE_RTSP_ERROR).sendToTarget();
+                    callbackContext.error("Cannot connect");
                 }
     
             }
