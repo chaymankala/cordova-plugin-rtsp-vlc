@@ -100,6 +100,21 @@
     }
 }
 
+-(NSInteger) getMediaPlayerState{
+    VLCMediaPlayerState currentState = [self.mediaPlayer state];
+    switch(currentState){
+        case VLCMediaPlayerStatePlaying:{
+            return 1;
+        }
+        case VLCMediaPlayerStateError:{
+            return 0;
+        }
+        default:{
+            return -1;
+        }
+    }
+}
+
 - (void)stop{
     if (self.mediaPlayer != nil) {
         if (self.mediaPlayer.isPlaying) {
