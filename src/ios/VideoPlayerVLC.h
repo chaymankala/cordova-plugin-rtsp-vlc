@@ -35,5 +35,6 @@
 -(void) play:(CDVInvokedUrlCommand *)command;
 -(void) stopInner;
 -(void) stop:(CDVInvokedUrlCommand *)command;
+-(void) playerStatus:(CDVInvokedUrlCommand *)command;
 
 @end
