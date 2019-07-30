@@ -14,6 +14,8 @@
 static VideoPlayerVLC* instance = nil;
 static CDVInvokedUrlCommand* commandGlob = nil;
 
+bool pinging = false;
+
 + (id) getInstance{
     return instance;
 }
@@ -40,7 +42,6 @@ static CDVInvokedUrlCommand* commandGlob = nil;
             [self.viewController addChildViewController:self.player];
             [self.webView.superview insertSubview:self.player.view aboveSubview:self.webView];
             
-            
         }
         @catch (NSException *exception) {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
@@ -54,6 +55,19 @@ static CDVInvokedUrlCommand* commandGlob = nil;
     }
     
     
+}
+
+-(void) playerStatus:(CDVInvokedUrlCommand *) command{
+     @try {
+         VideoPlayerVLCViewController* _ = [[VideoPlayerVLCViewController alloc] init];
+         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsNSInteger:[_ getMediaPlayerState]];
+         [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+     }
+    @catch (NSException *exception) {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+    }
+
 }
 
 -(void) stopInner{
